@@ -69,14 +69,14 @@ type
      ///	  Returns TRUE if the account is a mailbox.
      ///	</returns>
      function IsMailbox(): Boolean;
-     function GetSafeSendersCount():Integer;
-     function GetBlockedSenderCount():Integer;
+     function GetSafeSendersCount(): Integer;
+     function GetBlockedSenderCount(): Integer;
 
      ///	<summary>
      ///	  Returns the number of Blocked Sender email addresses
      ///	</summary>
-     function GetSafeRecipientCount():Integer;
-     property SafeSenders[i:Integer] : String read GetSafeSenders write SetSafeSenders;
+     function GetSafeRecipientCount(): Integer;
+     property SafeSenders[i:Integer]: String read GetSafeSenders write SetSafeSenders;
 
      ///	<summary>
      ///	  Contains Recipients that have been deemed to be safe to receive
@@ -85,8 +85,8 @@ type
      ///	<param name="i">
      ///	  Integer representing position in array
      ///	</param>
-     property SafeRecipients[i:Integer] : String read GetSafeRecipients write SetSafeRecipients;
-     property BlockedSenders[i:Integer] : String read GetBlockedSenders write SetBlockedSenders;
+     property SafeRecipients[i:Integer]: String read GetSafeRecipients write SetSafeRecipients;
+     property BlockedSenders[i:Integer]: String read GetBlockedSenders write SetBlockedSenders;
 
   end;
 
@@ -114,13 +114,13 @@ type
     private
       reg : TRegistry;
       Key : String;
-      Faccounts : TObjectList<TBaseAccount>;
+      FAccounts : TObjectList<TBaseAccount>;
       function GetProfileAccount(i : Integer) : TBaseAccount;
     public
       ///	<summary>
       ///	  The name of the Profile.
       ///	</summary>
-      profileName : String;
+      ProfileName : String;
       constructor Create(hKey: String; inProfileName: String); reintroduce;
 
       ///	<returns>
@@ -131,13 +131,12 @@ type
       property Accounts[i : Integer] : TBaseAccount read GetProfileAccount; default;
   end;
 
-
   ///	<summary>
   ///	  Is a list of Profiles that are in the Microsoft Outlook
   ///	</summary>
   TOutlookProfiles = class
     private
-      Fprofiles : TObjectList<TOutlookProfile>;
+      FProfiles : TObjectList<TOutlookProfile>;
       reg : TRegistry;
       function GetOutlookProfile(i : Integer) : TOutlookProfile;
     public
@@ -172,7 +171,7 @@ type
   TWindowsProfiles = class
     private
       reg : TRegistry;
-      Faccounts : TObjectList<TWindowsUserProfile>;
+      FAccounts : TObjectList<TWindowsUserProfile>;
       function GetAccountByIndex(i : Integer) : TWindowsUserProfile;
     public
       constructor Create;
@@ -206,7 +205,6 @@ function returnBinaryValueAsString(reg:TRegistry; name:String; var value:String)
 implementation
 
 const crlf = #10;
-
 
 //NOTE:   sPathToUserHive is the full path to the users "ntuser.dat" file.
 //
@@ -289,11 +287,11 @@ var
   account   : TWindowsUserProfile;
   rtc       : Boolean;
 begin
-  Faccounts := nil;
+  FAccounts := nil;
   reg := nil;
   valNames := nil;
   try
-    Faccounts   := TObjectList<TWindowsUserProfile>.Create;
+    FAccounts   := TObjectList<TWindowsUserProfile>.Create;
     reg         := TRegistry.Create;
     valNames    := TStringList.Create;
     reg.RootKey := HKEY_LOCAL_MACHINE;
@@ -302,7 +300,7 @@ begin
     for valueName in valNames do
     begin
       account := TWindowsUserProfile.Create('SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList\' + valueName);
-      Faccounts.Add(account);
+      FAccounts.Add(account);
     end;
   finally
     FreeAndNil(valNames);
@@ -325,7 +323,7 @@ begin
   FreeAndNil(FAccounts);
 end;
 
-constructor TOutlookProfile.Create(hKey:String; inProfileName:String);
+constructor TOutlookProfile.Create(hKey: String; inProfileName:String);
 var
   accountList : TStringList;
   accountName : String;
@@ -333,19 +331,19 @@ var
   i : Integer;
 begin
   reg := TRegistry.Create;
-  Faccounts := TObjectList<TBaseAccount>.Create;
+  FAccounts := TObjectList<TBaseAccount>.Create;
   accountList := TStringList.Create;
   try
     reg.RootKey := HKEY_CURRENT_USER;
     reg.OpenKey(hKey + '\9375CFF0413111d3B88A00104B2A6676', False);
     Key := hKey;
     reg.GetKeyNames(accountList);
-    profileName := inProfileName;
-    for i :=0 to accountList.Count - 1 do
+    ProfileName := inProfileName;
+    for i := 0 to accountList.Count - 1 do
     begin
       accountName := accountList[i];
       account := TBaseAccount.Create(hKey + '\9375CFF0413111d3B88A00104B2A6676\' + accountName);
-      Faccounts.Add(account);
+      FAccounts.Add(account);
     end;
   finally
     FreeAndNil(accountList);
@@ -386,27 +384,27 @@ end;
 destructor TOutlookProfile.Destroy;
 begin
   FreeAndNil(reg);
-  FreeAndNil(Faccounts);
+  FreeAndNil(FAccounts);
 end;
 
 function TOutlookProfile.Count():Integer;
 begin
-  Result := Faccounts.Count;
+  Result := FAccounts.Count;
 end;
 
 function TOutlookProfiles.Count():Integer;
 begin
-  Result := Fprofiles.Count;
+  Result := FProfiles.Count;
 end;
 
 function TOutlookProfile.GetProfileAccount(i : Integer) : TBaseAccount;
 begin
-  Result := Faccounts.Items[i];
+  Result := FAccounts[i];
 end;
 
 function TOutlookProfiles.GetOutlookProfile(i : Integer) : TOutlookProfile;
 begin
-  Result := FProfiles.Items[i];
+  Result := FProfiles[i];
 end;
 
 constructor TOutlookProfiles.Create;
@@ -415,7 +413,7 @@ var
   profileName  : String;
   profile      : TOutlookProfile;
 begin
-  Fprofiles    := TObjectList<TOutlookProfile>.Create(True);
+  FProfiles    := TObjectList<TOutlookProfile>.Create(True);
   reg          := TRegistry.Create;
   profileNames := TStringList.Create;
   try
@@ -425,7 +423,7 @@ begin
     for profileName in ProfileNames do
     begin
       profile := TOutlookProfile.Create('Software\Microsoft\Windows NT\CurrentVersion\Windows Messaging Subsystem\Profiles\' + profileName, profileName);
-      Fprofiles.Add(profile);
+      FProfiles.Add(profile);
     end;
   finally
     FreeAndNil(profileNames);
@@ -434,7 +432,7 @@ end;
 
 destructor TOutlookProfiles.Destroy;
 begin
-  FreeAndNil(Fprofiles);
+  FreeAndNil(FProfiles);
   FreeAndNil(reg);
 end;
 
@@ -445,7 +443,7 @@ var
 begin
   Result := '';
   i := 0;
-  while(i < len) do
+  while i < len do
   begin
     hex := hex + IntToHex(byte(value[i]), 2);
     Inc(i);
@@ -463,7 +461,7 @@ begin
   begin
     dSize := reg.GetDataSize(name);
     setLength(data, dSize + 1);
-    dsize := reg.ReadBinaryData(name,PByte(data)^, dSize);
+    dsize := reg.ReadBinaryData(name, PByte(data)^, dSize);
     value := ConvertBinaryToString(@Data[1], dSize );
     Result := True;
   end
@@ -482,8 +480,8 @@ begin
   if reg.ValueExists(name) then
   begin
     dSize := reg.GetDataSize(name);
-    setLength(data,dSize);
-    reg.ReadBinaryData(name,PByte(data)^,dSize);
+    setLength(data, dSize);
+    reg.ReadBinaryData(name, PByte(data)^, dSize);
     value := data;
     Result := True;
   end
@@ -504,12 +502,12 @@ var
   regPSTPathStr : String;
   regOSTPathStr : String;
 begin
-  RegistryKey               := regKey;
-  reg                       := TRegistry.Create;
-  regService                := TRegistry.Create;
-  regPreference             := TRegistry.Create;
-  regOSTPath                := TRegistry.Create;
-  regPSTPath                := TRegistry.Create;
+  RegistryKey                 := regKey;
+  reg                         := TRegistry.Create;
+  regService                  := TRegistry.Create;
+  regPreference               := TRegistry.Create;
+  regOSTPath                  := TRegistry.Create;
+  regPSTPath                  := TRegistry.Create;
 
 
   try
@@ -518,7 +516,6 @@ begin
     regPreference.RootKey     := HKEY_CURRENT_USER;
     regPSTPath.RootKey        := HKEY_CURRENT_USER;
     regOSTPath.RootKey        := HKEY_CURRENT_USER;
-
 
     FSafeSenders              := TStringList.Create;
     FSafeSenders.LineBreak    := ';';
@@ -536,12 +533,11 @@ begin
     DataFilePath              := '';
     AccessProgram             := 'Outlook';
 
-    returnBinaryValueAsString(reg,'POP3 Server', POP3Server);
-    returnBinaryValueAsString(reg,'IMAP Server', IMAPMailServer);
-    returnBinaryValueAsString(reg,'SMTP Server', SMTPMailServer);
-    returnBinaryValueAsString(reg,'Email', EmailAddress);
-    returnBinaryValueAsString(reg,'Account Name', DisplayName);
-
+    returnBinaryValueAsString(reg, 'POP3 Server', POP3Server);
+    returnBinaryValueAsString(reg, 'IMAP Server', IMAPMailServer);
+    returnBinaryValueAsString(reg, 'SMTP Server', SMTPMailServer);
+    returnBinaryValueAsString(reg, 'Email', EmailAddress);
+    returnBinaryValueAsString(reg, 'Account Name', DisplayName);
 
     if reg.ValueExists('SMTP Port') then
        SMTPPort    := reg.ReadInteger('SMTP Port')
@@ -571,11 +567,11 @@ begin
       if reg.ValueExists('IMAP Use SSL') then
         UseSSLOnRetrieve := reg.ReadBool('IMAP Use SSL');
     end
-    else POP3Port := 143;
+    else IMAPPort := 143;
 
-    if returnUIDKey(reg,'Preferences UID', PreferenceUID) then  // try and locate data file
+    if returnUIDKey(reg, 'Preferences UID', PreferenceUID) then  // try and locate data file
     begin
-      if regService.OpenKey('Software\Microsoft\Windows NT\CurrentVersion\Windows Messaging Subsystem\Profiles\Outlook\'+PreferenceUID,False) then
+      if regService.OpenKey('Software\Microsoft\Windows NT\CurrentVersion\Windows Messaging Subsystem\Profiles\Outlook\' + PreferenceUID, False) then
       begin
         returnBinaryValueAsString(regService, '001f0418', Data);
         FSafeSenders.Text := Data;
@@ -586,19 +582,19 @@ begin
       end;
     end;
 
-    if returnUIDKey(reg,'Service UID', ServiceUID) then  // try and locate data file
+    if returnUIDKey(reg, 'Service UID', ServiceUID) then  // try and locate data file
     begin
-      if regPreference.OpenKey('Software\Microsoft\Windows NT\CurrentVersion\Windows Messaging Subsystem\Profiles\Outlook\'+ServiceUID,False) then
+      if regPreference.OpenKey('Software\Microsoft\Windows NT\CurrentVersion\Windows Messaging Subsystem\Profiles\Outlook\' + ServiceUID, False) then
       begin
         returnUIDKey(regPreference, '01023d00', regPSTPathStr);
         returnUIDKey(regPreference, '01023d15', regOSTPathStr);
-        if((length(regPSTPathStr) > 0) and regPSTPath.OpenKey('Software\Microsoft\Windows NT\CurrentVersion\Windows Messaging Subsystem\Profiles\Outlook\'+regPSTPathStr,False)) then
+        if((Length(regPSTPathStr) > 0) and regPSTPath.OpenKey('Software\Microsoft\Windows NT\CurrentVersion\Windows Messaging Subsystem\Profiles\Outlook\' + regPSTPathStr, False)) then
         begin
           returnBinaryValueAsString(regPSTPath, '001f6700', DataFilePath);
         end;
-        if length(DataFilePath) = 0 then
+        if Length(DataFilePath) = 0 then
         begin
-          if((length(regOSTPathStr) > 0) and regOSTPath.OpenKey('Software\Microsoft\Windows NT\CurrentVersion\Windows Messaging Subsystem\Profiles\Outlook\'+regOSTPathStr,False)) then
+          if((Length(regOSTPathStr) > 0) and regOSTPath.OpenKey('Software\Microsoft\Windows NT\CurrentVersion\Windows Messaging Subsystem\Profiles\Outlook\' + regOSTPathStr, False)) then
           begin
             returnBinaryValueAsString(regOSTPath, '001f6610', DataFilePath);
           end;
@@ -692,7 +688,6 @@ begin
       if reg.ValueExists('POP3 Port') then
         detail.POP3Port         := reg.ReadInteger('POP3 Port')
       else detail.POP3Port := 110;
-
     finally
       if Assigned(reg) then FreeAndNil(reg);
     end;

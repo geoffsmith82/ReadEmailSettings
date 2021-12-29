@@ -149,10 +149,16 @@ begin
       for j := 0 to profiles[i].Count - 1 do
       begin
         Memo1.Lines.Add('AccountName:' + profiles[i].Accounts[j].DisplayName);
+        Memo1.Lines.Add('AccountDataPath:' + profiles[i].Accounts[j].DataFilePath);
+        if profiles[i].Accounts[j].IsAddressBook then
+          continue;
+
+
         Memo1.Lines.Add('AccountPOP3:' + profiles[i].Accounts[j].POP3Server);
+        Memo1.Lines.Add('AccountIMAPMailServer:' + profiles[i].Accounts[j].IMAPMailServer);
         Memo1.Lines.Add('AccountSMTP:' + profiles[i].Accounts[j].SMTPMailServer);
         Memo1.Lines.Add('AccountSUID:' + profiles[i].Accounts[j].ServiceUID);
-        Memo1.Lines.Add('AccountDataPath:' + profiles[i].Accounts[j].DataFilePath);
+
         Memo1.Lines.Add('AccountReg:' + profiles[i].Accounts[j].RegistryKey);
         Memo1.Lines.Add('AccountPUID:' + profiles[i].Accounts[j].PreferenceUID);
 
