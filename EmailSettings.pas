@@ -19,12 +19,12 @@ type
      FSafeRecipients  : TStringList;
      FBlockedSenders  : TStringList;
 
-     function GetSafeSenders(i:Integer):String;
-     procedure SetSafeSenders(i:Integer;const x : String);
-     function GetSafeRecipients(i:Integer):String;
-     procedure SetSafeRecipients(i:Integer;const x : String);
-     function GetBlockedSenders(i:Integer):String;
-     procedure SetBlockedSenders(i:Integer;const x : String);
+     function GetSafeSenders(i:Integer): String;
+     procedure SetSafeSenders(i:Integer; const x : String);
+     function GetSafeRecipients(i:Integer): String;
+     procedure SetSafeRecipients(i:Integer; const x : String);
+     function GetBlockedSenders(i:Integer): String;
+     procedure SetBlockedSenders(i:Integer; const x : String);
 
     public
      DisplayName      : String;
@@ -195,7 +195,7 @@ type
       constructor Create;
       destructor Destroy; override;
       function GetEmailCount(): Integer;
-      function FindEmailAccount(addr:String): TBaseAccount;
+      function FindEmailAccount(addr: String): TBaseAccount;
 //      procedure Debug(); overload;
       function Debug(): String; overload;
   end;
