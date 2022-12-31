@@ -39,27 +39,28 @@ uses
 
 type
   TForm2 = class(TForm)
-    Memo1: TMemo;
-    Button1: TButton;
-    Button2: TButton;
-    Button3: TButton;
-    Button4: TButton;
-    Button5: TButton;
-    Button6: TButton;
+    mmoLog: TMemo;
+    btnEmailInfoTest: TButton;
+    btnOutputProfileTest: TButton;
+    btnWindowsProfileTest: TButton;
+    btnLoadRegistryFile: TButton;
+    btnExtractCDKeys: TButton;
+    btnGetWindowsUsername: TButton;
     FDConnection1: TFDConnection;
     FDPhysMySQLDriverLink1: TFDPhysMySQLDriverLink;
-    FDTable1: TFDTable;
-    procedure Button1Click(Sender: TObject);
-    procedure Button2Click(Sender: TObject);
-    procedure Button3Click(Sender: TObject);
-    procedure Button4Click(Sender: TObject);
-    procedure Button5Click(Sender: TObject);
-    procedure Button6Click(Sender: TObject);
+    tblMailAccess: TFDTable;
+    procedure btnEmailInfoTestClick(Sender: TObject);
+    procedure btnOutputProfileTestClick(Sender: TObject);
+    procedure btnWindowsProfileTestClick(Sender: TObject);
+    procedure btnLoadRegistryFileClick(Sender: TObject);
+    procedure btnExtractCDKeysClick(Sender: TObject);
+    procedure btnGetWindowsUsernameClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
   private
     { Private declarations }
     FIniSettings : TIniFile;
+    procedure SaveAddressToISPConfigDatabase(SenderEmailAddress: string; k: Integer);
   public
     { Public declarations }
   end;
@@ -125,15 +126,15 @@ begin
   end;
 end;
 
-procedure TForm2.Button1Click(Sender: TObject);
+procedure TForm2.btnEmailInfoTestClick(Sender: TObject);
 var
   email : TEmailSettings;
 begin
   email := TEmailSettings.Create;
-  Memo1.Lines.Text := email.Debug;
+  mmoLog.Lines.Text := email.Debug;
 end;
 
-procedure TForm2.Button2Click(Sender: TObject);
+procedure TForm2.btnOutputProfileTestClick(Sender: TObject);
 var
   profiles : TOutlookProfiles;
   i : Integer;
@@ -141,63 +142,50 @@ var
 begin
  profiles := TOutlookProfiles.Create;
  try
-   Memo1.Lines.Add('ProfileCount:' + IntToStr(profiles.Count));
-    for i := 0 to profiles.Count-1 do
+   mmoLog.Lines.Add('ProfileCount:' + IntToStr(profiles.Count));
+    for i := 0 to profiles.Count - 1 do
     begin
-      Memo1.Lines.Add('ProfileName:' + profiles[i].ProfileName);
-      Memo1.Lines.Add('AccountCount:' + IntToStr(profiles[i].Count));
+      mmoLog.Lines.Add('ProfileName:' + profiles[i].ProfileName);
+      mmoLog.Lines.Add('AccountCount:' + IntToStr(profiles[i].Count));
       for j := 0 to profiles[i].Count - 1 do
       begin
-        Memo1.Lines.Add('AccountName:' + profiles[i].Accounts[j].DisplayName);
-        Memo1.Lines.Add('AccountDataPath:' + profiles[i].Accounts[j].DataFilePath);
+        mmoLog.Lines.Add('AccountName:' + profiles[i].Accounts[j].DisplayName);
+        mmoLog.Lines.Add('AccountDataPath:' + profiles[i].Accounts[j].DataFilePath);
         if profiles[i].Accounts[j].IsAddressBook then
           continue;
 
 
-        Memo1.Lines.Add('AccountPOP3:' + profiles[i].Accounts[j].POP3Server);
-        Memo1.Lines.Add('AccountIMAPMailServer:' + profiles[i].Accounts[j].IMAPMailServer);
-        Memo1.Lines.Add('AccountSMTP:' + profiles[i].Accounts[j].SMTPMailServer);
-        Memo1.Lines.Add('AccountSUID:' + profiles[i].Accounts[j].ServiceUID);
+        mmoLog.Lines.Add('AccountPOP3:' + profiles[i].Accounts[j].POP3Server);
+        mmoLog.Lines.Add('AccountIMAPMailServer:' + profiles[i].Accounts[j].IMAPMailServer);
+        mmoLog.Lines.Add('AccountSMTP:' + profiles[i].Accounts[j].SMTPMailServer);
+        mmoLog.Lines.Add('AccountSUID:' + profiles[i].Accounts[j].ServiceUID);
 
-        Memo1.Lines.Add('AccountReg:' + profiles[i].Accounts[j].RegistryKey);
-        Memo1.Lines.Add('AccountPUID:' + profiles[i].Accounts[j].PreferenceUID);
+        mmoLog.Lines.Add('AccountReg:' + profiles[i].Accounts[j].RegistryKey);
+        mmoLog.Lines.Add('AccountPUID:' + profiles[i].Accounts[j].PreferenceUID);
 
 
 
         for k := 0 to profiles[i].Accounts[j].GetSafeSendersCount()-1 do
         begin
-          Memo1.Lines.Add('Safe['+IntToStr(k)+']:'+ profiles[i].Accounts[j].SafeSenders[k]);
+          mmoLog.Lines.Add('Safe['+IntToStr(k)+']:'+ profiles[i].Accounts[j].SafeSenders[k]);
         end;
         for k := 0 to profiles[i].Accounts[j].GetSafeRecipientCount()-1 do
         begin
-          Memo1.Lines.Add('SafeRecipient['+IntToStr(k)+']:'+ profiles[i].Accounts[j].SafeRecipients[k]);
+          mmoLog.Lines.Add('SafeRecipient['+IntToStr(k)+']:'+ profiles[i].Accounts[j].SafeRecipients[k]);
         end;
 
 
-        for k := 0 to profiles[i].Accounts[j].GetBlockedSenderCount()-1 do
+        for k := 0 to profiles[i].Accounts[j].GetBlockedSenderCount() - 1 do
         begin
-          Memo1.Lines.Add('BlockedSenders['+IntToStr(k)+']:'+ profiles[i].Accounts[j].BlockedSenders[k]);
-          Application.ProcessMessages;
-          FDTable1.Active := True;
-          if not FDTable1.Locate('source', profiles[i].Accounts[j].BlockedSenders[k], []) then
+          mmoLog.Lines.Add('BlockedSenders['+IntToStr(k)+']:'+ profiles[i].Accounts[j].BlockedSenders[k]);
+
+          if (profiles[i].Accounts[j].BlockedSenders[k].Trim = '') or (k = 343) then
           begin
-            FDTable1.Append;
-            try
-              Memo1.Lines.Add('AddedBlockedSenders['+IntToStr(k)+']:'+ profiles[i].Accounts[j].BlockedSenders[k]);
-              FDTable1.FieldByName('source').AsString := profiles[i].Accounts[j].BlockedSenders[k];
-              FDTable1.FieldByName('sys_userid').AsInteger := 1;
-              FDTable1.FieldByName('sys_groupid').AsInteger := 1;
-              FDTable1.FieldByName('sys_perm_user').AsString := 'riud';
-              FDTable1.FieldByName('sys_perm_group').AsString := 'riud';
-              FDTable1.FieldByName('server_id').AsInteger := 1;
-              FDTable1.FieldByName('access').AsString := 'REJECT';
-              FDTable1.FieldByName('type').AsString := 'sender';
-              FDTable1.FieldByName('active').AsString := 'y';
-              FDTable1.Post;
-            except
-              FDTable1.Cancel;
-            end;
+            OutputDebugString('');
           end;
+
+          Application.ProcessMessages;
+          SaveAddressToISPConfigDatabase(profiles[i].Accounts[j].BlockedSenders[k], k);
         end;
         //001f0418
       end;
@@ -207,7 +195,7 @@ begin
  end;
 end;
 
-procedure TForm2.Button3Click(Sender: TObject);
+procedure TForm2.btnWindowsProfileTestClick(Sender: TObject);
 var
   Profiles : TWindowsProfiles;
   i : Integer;
@@ -216,7 +204,7 @@ begin
   try
    for i  := 0 to profiles.count-1 do
    begin
-     Memo1.Lines.Add('ProfilePath:'+profiles[i].ProfilePath);
+     mmoLog.Lines.Add('ProfilePath:' + profiles[i].ProfilePath);
    end;
   finally
     FreeAndNil(profiles);
@@ -274,13 +262,13 @@ begin
    end;
 end;
 
-procedure TForm2.Button4Click(Sender: TObject);
+procedure TForm2.btnLoadRegistryFileClick(Sender: TObject);
 begin
   Priv();
   LoadUserHive('C:\Users\geoff\Desktop\config\SOFTWARE');
 end;
 
-procedure TForm2.Button5Click(Sender: TObject);
+procedure TForm2.btnExtractCDKeysClick(Sender: TObject);
 var
   reg : TRegistry;
   str : String;
@@ -289,8 +277,8 @@ begin
   try
     reg.RootKey := HKEY_LOCAL_MACHINE;
     reg.OpenKey('SOFTWARE\Microsoft\Windows NT\CurrentVersion', False);
-    returnBinaryValueAsString(reg,'DigitalProductID', str);
-    Memo1.Lines.Add('result:' + str);
+ //   returnBinaryValueAsString(reg,'DigitalProductID', str);
+    mmoLog.Lines.Add('result:' + str);
 //    Memo1.Lines.Add(GetProductKey);
   finally
     FreeAndNil(reg);
@@ -329,7 +317,7 @@ begin
 
     // Allocate buffer for user information in the token.
     ptiUser :=  HeapAlloc(GetProcessHeap(), 0, cbti);
-    if (ptiUser= nil) then
+    if (ptiUser = nil) then
       Exit;
 
     // Retrieve the user information from the token.
@@ -362,18 +350,15 @@ begin
   sdomain   := domain;
 end;
 
-procedure TForm2.Button6Click(Sender: TObject);
+procedure TForm2.btnGetWindowsUsernameClick(Sender: TObject);
 var
   user : String;
   domain: String;
 begin
-  //GetCurrentUserAndDomain1(user,length(user),domain,length(domain));
   GetCurrentUserAndDomain(user, domain);
-  Memo1.Lines.Add('username:' + user);
-  Memo1.Lines.Add('domain:' + domain);
+  mmoLog.Lines.Add('username:' + user);
+  mmoLog.Lines.Add('domain:' + domain);
 end;
-
-
 
 procedure TForm2.FormCreate(Sender: TObject);
 var
@@ -393,6 +378,30 @@ end;
 procedure TForm2.FormDestroy(Sender: TObject);
 begin
   FreeAndNil(FIniSettings);
+end;
+
+procedure TForm2.SaveAddressToISPConfigDatabase(SenderEmailAddress: string; k: Integer);
+begin
+  tblMailAccess.Active := True;
+  if not tblMailAccess.Locate('source', SenderEmailAddress, []) then
+  begin
+    tblMailAccess.Append;
+    try
+      mmoLog.Lines.Add('AddedBlockedSenders[' + IntToStr(k) + ']:' + SenderEmailAddress);
+      tblMailAccess.FieldByName('source').AsString := SenderEmailAddress;
+      tblMailAccess.FieldByName('sys_userid').AsInteger := 1;
+      tblMailAccess.FieldByName('sys_groupid').AsInteger := 1;
+      tblMailAccess.FieldByName('sys_perm_user').AsString := 'riud';
+      tblMailAccess.FieldByName('sys_perm_group').AsString := 'riud';
+      tblMailAccess.FieldByName('server_id').AsInteger := 1;
+      tblMailAccess.FieldByName('access').AsString := 'REJECT';
+      tblMailAccess.FieldByName('type').AsString := 'sender';
+      tblMailAccess.FieldByName('active').AsString := 'y';
+      tblMailAccess.Post;
+    except
+      tblMailAccess.Cancel;
+    end;
+  end;
 end;
 
 end.

@@ -12,9 +12,8 @@ uses
 
 type
   TBaseAccount = class
-    private
+    strict private
      reg              : TRegistry;
-     SSafeSenders     : String;
      FSafeSenders     : TStringList;
      FSafeRecipients  : TStringList;
      FBlockedSenders  : TStringList;
@@ -25,7 +24,7 @@ type
      procedure SetSafeRecipients(i:Integer; const x : String);
      function GetBlockedSenders(i:Integer): String;
      procedure SetBlockedSenders(i:Integer; const x : String);
-
+     function ReturnBinaryValueAsString(reg:TRegistry; name:String; var value:String): Boolean;
     public
      DisplayName      : String;
      SMTPMailServer   : String;
@@ -52,7 +51,7 @@ type
      ///	<returns>
      ///	  Returns TRUE if the account is/has a local store.
      ///	</returns>
-     function isStore(): Boolean;
+     function IsStore(): Boolean;
 
      ///	<summary>
      ///	  Is used to determine if the account is/has a Address Book.
@@ -90,6 +89,7 @@ type
 
   end;
 
+  {
   TSMTPAccount = class (TBaseAccount)
 
   end;
@@ -105,6 +105,7 @@ type
   TExchangeAccount = class(TBaseAccount)
 
   end;
+  }
 
   ///	<summary>
   ///	  Contains all the information for a particular Outlook Profile.  This is
@@ -181,7 +182,7 @@ type
   end;
 
   TEmailSettings = class
-    private
+    strict private
       outlooksubKeys   : TStringList;
       outlooksubKeys2  : TStringList;
       expresssubKeys   : TStringList;
@@ -200,7 +201,6 @@ type
   end;
 
 procedure LoadUserHive(sPathToUserHive: string);
-function returnBinaryValueAsString(reg:TRegistry; name:String; var value:String):Boolean;
 
 implementation
 
@@ -367,18 +367,22 @@ end;
 
 procedure TBaseAccount.SetBlockedSenders(i:Integer;const x : String);
 begin
+  if (x='@centrecom.com.au') then
+  begin
+    OutputDebugString('');
+  end;
   FBlockedSenders[i] := x;
 end;
 
 
 function TBaseAccount.GetSafeRecipients(i:Integer):String;
 begin
-  Result := FSafeSenders[i];
+  Result := FSafeRecipients[i];
 end;
 
 procedure TBaseAccount.SetSafeRecipients(i:Integer;const x : String);
 begin
-  FSafeSenders[i] := x;
+  FSafeRecipients[i] := x;
 end;
 
 destructor TOutlookProfile.Destroy;
@@ -418,11 +422,14 @@ begin
   profileNames := TStringList.Create;
   try
     reg.RootKey  := HKEY_CURRENT_USER;
-    reg.OpenKey('Software\Microsoft\Windows NT\CurrentVersion\Windows Messaging Subsystem\Profiles\', False);
+//    reg.OpenKey('Software\Microsoft\Windows NT\CurrentVersion\Windows Messaging Subsystem\Profiles\', False);
+    reg.OpenKey('SOFTWARE\Microsoft\Office\16.0\Outlook\Profiles\', False);
+
     reg.GetKeyNames(profileNames);
     for profileName in ProfileNames do
     begin
-      profile := TOutlookProfile.Create('Software\Microsoft\Windows NT\CurrentVersion\Windows Messaging Subsystem\Profiles\' + profileName, profileName);
+//      profile := TOutlookProfile.Create('Software\Microsoft\Windows NT\CurrentVersion\Windows Messaging Subsystem\Profiles\' + profileName, profileName);
+      profile := TOutlookProfile.Create('SOFTWARE\Microsoft\Office\16.0\Outlook\Profiles\' + profileName, profileName);
       FProfiles.Add(profile);
     end;
   finally
@@ -451,7 +458,7 @@ begin
   Result := lowercase(hex);
 end;
 
-function returnUIDKey(reg:TRegistry; name:String; var value:String):Boolean;
+function ReturnUIDKey(reg:TRegistry; name:String; var value:String):Boolean;
 var
   data  : String;
   dSize : Integer;
@@ -472,7 +479,7 @@ begin
   end;
 end;
 
-function returnBinaryValueAsString(reg:TRegistry; name:String; var value:String):Boolean;
+function TBaseAccount.ReturnBinaryValueAsString(reg:TRegistry; name:String; var value:String):Boolean;
 var
   dSize : Integer;
   data  : String;
@@ -494,7 +501,9 @@ end;
 
 constructor TBaseAccount.Create(regKey:String);
 var
-  Data          : String;
+  SafeSenders   : String;
+  SafeRecipients : string;
+  BlockedSenders : String;
   regService    : TRegistry;
   regPreference : TRegistry;
   regPSTPath    : TRegistry;
@@ -533,11 +542,11 @@ begin
     DataFilePath              := '';
     AccessProgram             := 'Outlook';
 
-    returnBinaryValueAsString(reg, 'POP3 Server', POP3Server);
-    returnBinaryValueAsString(reg, 'IMAP Server', IMAPMailServer);
-    returnBinaryValueAsString(reg, 'SMTP Server', SMTPMailServer);
-    returnBinaryValueAsString(reg, 'Email', EmailAddress);
-    returnBinaryValueAsString(reg, 'Account Name', DisplayName);
+///    returnBinaryValueAsString(reg, 'POP3 Server', POP3Server);
+//    returnBinaryValueAsString(reg, 'IMAP Server', IMAPMailServer);
+//    returnBinaryValueAsString(reg, 'SMTP Server', SMTPMailServer);
+//    returnBinaryValueAsString(reg, 'Email', EmailAddress);
+ //   returnBinaryValueAsString(reg, 'Account Name', DisplayName);
 
     if reg.ValueExists('SMTP Port') then
        SMTPPort    := reg.ReadInteger('SMTP Port')
@@ -571,32 +580,36 @@ begin
 
     if returnUIDKey(reg, 'Preferences UID', PreferenceUID) then  // try and locate data file
     begin
-      if regService.OpenKey('Software\Microsoft\Windows NT\CurrentVersion\Windows Messaging Subsystem\Profiles\Outlook\' + PreferenceUID, False) then
+//      if regService.OpenKey('Software\Microsoft\Windows NT\CurrentVersion\Windows Messaging Subsystem\Profiles\Outlook\' + PreferenceUID, False) then
+      if regService.OpenKey('SOFTWARE\Microsoft\Office\16.0\Outlook\Profiles\Outlook\' + PreferenceUID, False) then
+
       begin
-        returnBinaryValueAsString(regService, '001f0418', Data);
-        FSafeSenders.Text := Data;
-        returnBinaryValueAsString(regService, '001f0419', Data);
-        FSafeRecipients.Text := Data;
-        returnBinaryValueAsString(regService, '001f041a', Data);
-        FBlockedSenders.Text := Data.Trim;
+        ReturnBinaryValueAsString(regService, '001f0418', SafeSenders);
+        FSafeSenders.Text := SafeSenders;
+
+        ReturnBinaryValueAsString(regService, '001f0419', SafeRecipients);
+        FSafeRecipients.Text := SafeRecipients;
+
+        ReturnBinaryValueAsString(regService, '001f041a', BlockedSenders);
+        FBlockedSenders.Text := BlockedSenders.Trim;
       end;
     end;
 
-    if returnUIDKey(reg, 'Service UID', ServiceUID) then  // try and locate data file
+    if ReturnUIDKey(reg, 'Service UID', ServiceUID) then  // try and locate data file
     begin
       if regPreference.OpenKey('Software\Microsoft\Windows NT\CurrentVersion\Windows Messaging Subsystem\Profiles\Outlook\' + ServiceUID, False) then
       begin
-        returnUIDKey(regPreference, '01023d00', regPSTPathStr);
-        returnUIDKey(regPreference, '01023d15', regOSTPathStr);
+        ReturnUIDKey(regPreference, '01023d00', regPSTPathStr);
+        ReturnUIDKey(regPreference, '01023d15', regOSTPathStr);
         if((Length(regPSTPathStr) > 0) and regPSTPath.OpenKey('Software\Microsoft\Windows NT\CurrentVersion\Windows Messaging Subsystem\Profiles\Outlook\' + regPSTPathStr, False)) then
         begin
-          returnBinaryValueAsString(regPSTPath, '001f6700', DataFilePath);
+          ReturnBinaryValueAsString(regPSTPath, '001f6700', DataFilePath);
         end;
         if Length(DataFilePath) = 0 then
         begin
           if((Length(regOSTPathStr) > 0) and regOSTPath.OpenKey('Software\Microsoft\Windows NT\CurrentVersion\Windows Messaging Subsystem\Profiles\Outlook\' + regOSTPathStr, False)) then
           begin
-            returnBinaryValueAsString(regOSTPath, '001f6610', DataFilePath);
+            ReturnBinaryValueAsString(regOSTPath, '001f6610', DataFilePath);
           end;
         end;
       end;
@@ -632,7 +645,7 @@ begin
   FreeAndNil(FBlockedSenders);
 end;
 
-function TBaseAccount.isStore(): Boolean;
+function TBaseAccount.IsStore(): Boolean;
 begin
 //  Result := (reg.ValueExists('MAPI Provider') and (reg.ReadInteger('MAPI Provider')=4));
   Result := length(DataFilePath) > 0;
@@ -655,6 +668,7 @@ var
   reg : TRegistry;
 begin
   detail := nil;
+  Result := nil;
   for i := 0 to outlooksubKeys2.Count - 1 do
   begin
     reg := TRegistry.Create;
@@ -775,16 +789,16 @@ begin
   begin
     detail := emailDetails.Items[i];
     Result := Result + '---------------------------------------' + crlf;
-    Result := Result + 'Email Address: '+detail.EmailAddress  + crlf;
-    Result := Result + 'Display Name: '+ detail.DisplayName  + crlf;
-    Result := Result + 'SMTP Server: ' + detail.SMTPMailServer +':' + IntToStr(detail.SMTPPort) + crlf;
-    Result := Result + 'POP3 Server: ' + detail.POP3Server+':' + IntToStr(detail.POP3Port) + crlf;
-    Result := Result + 'Service UID: ' + detail.ServiceUID + crlf;
+    Result := Result + 'Email Address:  ' + detail.EmailAddress  + crlf;
+    Result := Result + 'Display Name:   '+ detail.DisplayName  + crlf;
+    Result := Result + 'SMTP Server:    ' + detail.SMTPMailServer +':' + IntToStr(detail.SMTPPort) + crlf;
+    Result := Result + 'POP3 Server:    ' + detail.POP3Server+':' + IntToStr(detail.POP3Port) + crlf;
+    Result := Result + 'Service UID:    ' + detail.ServiceUID + crlf;
     Result := Result + 'Data File Path: ' + detail.DataFilePath + crlf;
-    Result := Result + 'Registry Key: ' + detail.RegistryKey + crlf;
-    Result := Result + 'isStore: ' + BoolToStr(detail.isStore) + crlf;
-    Result := Result + 'isAddressBook: ' + BoolToStr(detail.IsAddressBook) + crlf;
-    Result := Result + 'isMailbox: ' + BoolToStr(detail.IsMailbox) + crlf;
+    Result := Result + 'Registry Key:   ' + detail.RegistryKey + crlf;
+    Result := Result + 'IsStore:        ' + BoolToStr(detail.IsStore, True) + crlf;
+    Result := Result + 'IsAddressBook:  ' + BoolToStr(detail.IsAddressBook, True) + crlf;
+    Result := Result + 'IsMailbox:      ' + BoolToStr(detail.IsMailbox, True) + crlf;
   end;
 {$ifdef CONSOLE}
   Writeln(Result);

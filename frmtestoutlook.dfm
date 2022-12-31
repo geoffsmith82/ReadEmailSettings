@@ -2,8 +2,8 @@ object Form2: TForm2
   Left = 0
   Top = 0
   Caption = 'Form2'
-  ClientHeight = 1338
-  ClientWidth = 1936
+  ClientHeight = 1056
+  ClientWidth = 1924
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -13,34 +13,39 @@ object Form2: TForm2
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   PixelsPerInch = 240
+  DesignSize = (
+    1924
+    1056)
   TextHeight = 30
-  object Memo1: TMemo
-    Left = 32
-    Top = 128
+  object mmoLog: TMemo
+    Left = 52
+    Top = 102
     Width = 1186
-    Height = 1170
+    Height = 908
     Margins.Left = 6
     Margins.Top = 6
     Margins.Right = 6
     Margins.Bottom = 6
+    Anchors = [akLeft, akTop, akBottom]
     Lines.Strings = (
       'Memo1')
+    ScrollBars = ssBoth
     TabOrder = 0
   end
-  object Button1: TButton
-    Left = 16
-    Top = 16
-    Width = 150
+  object btnEmailInfoTest: TButton
+    Left = 1328
+    Top = 11
+    Width = 274
     Height = 50
     Margins.Left = 6
     Margins.Top = 6
     Margins.Right = 6
     Margins.Bottom = 6
-    Caption = 'Button1'
+    Caption = 'Email Info Test'
     TabOrder = 1
-    OnClick = Button1Click
+    OnClick = btnEmailInfoTestClick
   end
-  object Button2: TButton
+  object btnOutputProfileTest: TButton
     Left = 1328
     Top = 96
     Width = 274
@@ -51,9 +56,9 @@ object Form2: TForm2
     Margins.Bottom = 6
     Caption = 'outlook profile test'
     TabOrder = 2
-    OnClick = Button2Click
+    OnClick = btnOutputProfileTestClick
   end
-  object Button3: TButton
+  object btnWindowsProfileTest: TButton
     Left = 1328
     Top = 176
     Width = 274
@@ -64,9 +69,9 @@ object Form2: TForm2
     Margins.Bottom = 6
     Caption = 'windows profile test'
     TabOrder = 3
-    OnClick = Button3Click
+    OnClick = btnWindowsProfileTestClick
   end
-  object Button4: TButton
+  object btnLoadRegistryFile: TButton
     Left = 1328
     Top = 272
     Width = 274
@@ -77,9 +82,9 @@ object Form2: TForm2
     Margins.Bottom = 6
     Caption = 'test load registry file'
     TabOrder = 4
-    OnClick = Button4Click
+    OnClick = btnLoadRegistryFileClick
   end
-  object Button5: TButton
+  object btnExtractCDKeys: TButton
     Left = 1328
     Top = 368
     Width = 274
@@ -90,9 +95,9 @@ object Form2: TForm2
     Margins.Bottom = 6
     Caption = 'Extract CDKeys'
     TabOrder = 5
-    OnClick = Button5Click
+    OnClick = btnExtractCDKeysClick
   end
-  object Button6: TButton
+  object btnGetWindowsUsername: TButton
     Left = 1328
     Top = 480
     Width = 418
@@ -103,7 +108,7 @@ object Form2: TForm2
     Margins.Bottom = 6
     Caption = 'Get Windows Domain\Username'
     TabOrder = 6
-    OnClick = Button6Click
+    OnClick = btnGetWindowsUsernameClick
   end
   object FDConnection1: TFDConnection
     Params.Strings = (
@@ -117,7 +122,7 @@ object Form2: TForm2
     Left = 1312
     Top = 650
   end
-  object FDTable1: TFDTable
+  object tblMailAccess: TFDTable
     Connection = FDConnection1
     TableName = 'dbispconfig.mail_access'
     Left = 1624
