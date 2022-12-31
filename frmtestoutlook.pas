@@ -35,10 +35,11 @@ uses
   , FireDAC.DApt
   , FireDAC.Comp.DataSet
   , EmailSettings
+  , WindowsAccountSettings
   ;
 
 type
-  TForm2 = class(TForm)
+  TfrmMain = class(TForm)
     mmoLog: TMemo;
     btnEmailInfoTest: TButton;
     btnOutputProfileTest: TButton;
@@ -66,7 +67,7 @@ type
   end;
 
 var
-  Form2: TForm2;
+  frmMain: TfrmMain;
 
 implementation
 
@@ -126,7 +127,7 @@ begin
   end;
 end;
 
-procedure TForm2.btnEmailInfoTestClick(Sender: TObject);
+procedure TfrmMain.btnEmailInfoTestClick(Sender: TObject);
 var
   email : TEmailSettings;
 begin
@@ -134,7 +135,7 @@ begin
   mmoLog.Lines.Text := email.Debug;
 end;
 
-procedure TForm2.btnOutputProfileTestClick(Sender: TObject);
+procedure TfrmMain.btnOutputProfileTestClick(Sender: TObject);
 var
   profiles : TOutlookProfiles;
   i : Integer;
@@ -195,12 +196,12 @@ begin
  end;
 end;
 
-procedure TForm2.btnWindowsProfileTestClick(Sender: TObject);
+procedure TfrmMain.btnWindowsProfileTestClick(Sender: TObject);
 var
-  Profiles : TWindowsProfiles;
+//  Profiles : TWindowsProfiles;
   i : Integer;
 begin
-  Profiles := TWindowsProfiles.Create;
+{  Profiles := TWindowsProfiles.Create;
   try
    for i  := 0 to profiles.count-1 do
    begin
@@ -208,7 +209,7 @@ begin
    end;
   finally
     FreeAndNil(profiles);
-  end;
+  end;}
 end;
 
 procedure Priv();
@@ -262,13 +263,13 @@ begin
    end;
 end;
 
-procedure TForm2.btnLoadRegistryFileClick(Sender: TObject);
+procedure TfrmMain.btnLoadRegistryFileClick(Sender: TObject);
 begin
   Priv();
   LoadUserHive('C:\Users\geoff\Desktop\config\SOFTWARE');
 end;
 
-procedure TForm2.btnExtractCDKeysClick(Sender: TObject);
+procedure TfrmMain.btnExtractCDKeysClick(Sender: TObject);
 var
   reg : TRegistry;
   str : String;
@@ -350,7 +351,7 @@ begin
   sdomain   := domain;
 end;
 
-procedure TForm2.btnGetWindowsUsernameClick(Sender: TObject);
+procedure TfrmMain.btnGetWindowsUsernameClick(Sender: TObject);
 var
   user : String;
   domain: String;
@@ -360,7 +361,7 @@ begin
   mmoLog.Lines.Add('domain:' + domain);
 end;
 
-procedure TForm2.FormCreate(Sender: TObject);
+procedure TfrmMain.FormCreate(Sender: TObject);
 var
   filename : string;
   oParams: TFDPhysMySQLConnectionDefParams;
@@ -375,12 +376,12 @@ begin
   oParams.Server   := FIniSettings.ReadString('Authentication', 'Server', '');
 end;
 
-procedure TForm2.FormDestroy(Sender: TObject);
+procedure TfrmMain.FormDestroy(Sender: TObject);
 begin
   FreeAndNil(FIniSettings);
 end;
 
-procedure TForm2.SaveAddressToISPConfigDatabase(SenderEmailAddress: string; k: Integer);
+procedure TfrmMain.SaveAddressToISPConfigDatabase(SenderEmailAddress: string; k: Integer);
 begin
   tblMailAccess.Active := True;
   if not tblMailAccess.Locate('source', SenderEmailAddress, []) then

@@ -8,7 +8,7 @@
         <MainSource>testoutlook.dpr</MainSource>
         <Platform Condition="'$(Platform)'==''">Win64</Platform>
         <ProjectGuid>{A847DEF0-6CAE-4FCE-B4EB-0D461637385C}</ProjectGuid>
-        <ProjectVersion>19.3</ProjectVersion>
+        <ProjectVersion>19.5</ProjectVersion>
         <TargetedPlatforms>3</TargetedPlatforms>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Config)'=='Base' or '$(Base)'!=''">
@@ -99,8 +99,10 @@
             <MainSource>MainSource</MainSource>
         </DelphiCompile>
         <DCCReference Include="frmtestoutlook.pas">
-            <Form>Form2</Form>
+            <Form>frmMain</Form>
+            <FormType>dfm</FormType>
         </DCCReference>
+        <DCCReference Include="WindowsAccountSettings.pas"/>
         <DCCReference Include="EmailSettings.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
@@ -153,7 +155,7 @@
                     <VersionInfoKeys Name="Comments"/>
                 </VersionInfoKeys>
             </Delphi.Personality>
-            <Deployment Version="3">
+            <Deployment Version="4">
                 <DeployFile LocalName="Debug\Win64\testoutlook.exe" Configuration="Debug" Class="ProjectOutput">
                     <Platform Name="Win64">
                         <RemoteName>testoutlook.exe</RemoteName>

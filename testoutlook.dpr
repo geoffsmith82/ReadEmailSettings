@@ -2,7 +2,8 @@ program testoutlook;
 
 uses
   Forms,
-  frmtestoutlook in 'frmtestoutlook.pas' {Form2},
+  frmtestoutlook in 'frmtestoutlook.pas' {frmMain},
+  WindowsAccountSettings in 'WindowsAccountSettings.pas',
   EmailSettings in 'EmailSettings.pas';
 
 {$R *.res}
@@ -10,6 +11,6 @@ uses
 begin
   Application.Initialize;
   Application.MainFormOnTaskbar := True;
-  Application.CreateForm(TForm2, Form2);
+  Application.CreateForm(TfrmMain, frmMain);
   Application.Run;
 end.

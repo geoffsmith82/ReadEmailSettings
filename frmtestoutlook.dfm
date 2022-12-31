@@ -1,7 +1,7 @@
-object Form2: TForm2
+object frmMain: TfrmMain
   Left = 0
   Top = 0
-  Caption = 'Form2'
+  Caption = 'Read Email Settings'
   ClientHeight = 1056
   ClientWidth = 1924
   Color = clBtnFace

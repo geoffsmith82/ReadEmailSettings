@@ -18,13 +18,13 @@ type
      FSafeRecipients  : TStringList;
      FBlockedSenders  : TStringList;
 
-     function GetSafeSenders(i:Integer): String;
-     procedure SetSafeSenders(i:Integer; const x : String);
-     function GetSafeRecipients(i:Integer): String;
-     procedure SetSafeRecipients(i:Integer; const x : String);
-     function GetBlockedSenders(i:Integer): String;
-     procedure SetBlockedSenders(i:Integer; const x : String);
-     function ReturnBinaryValueAsString(reg:TRegistry; name:String; var value:String): Boolean;
+     function GetSafeSenders(i: Integer): String;
+     procedure SetSafeSenders(i: Integer; const x : String);
+     function GetSafeRecipients(i: Integer): String;
+     procedure SetSafeRecipients(i: Integer; const x : String);
+     function GetBlockedSenders(i: Integer): String;
+     procedure SetBlockedSenders(i: Integer; const x : String);
+     function ReturnBinaryValueAsString(reg: TRegistry; name: String; var value: String): Boolean;
     public
      DisplayName      : String;
      SMTPMailServer   : String;
@@ -75,7 +75,7 @@ type
      ///	  Returns the number of Blocked Sender email addresses
      ///	</summary>
      function GetSafeRecipientCount(): Integer;
-     property SafeSenders[i:Integer]: String read GetSafeSenders write SetSafeSenders;
+     property SafeSenders[i: Integer]: String read GetSafeSenders write SetSafeSenders;
 
      ///	<summary>
      ///	  Contains Recipients that have been deemed to be safe to receive
@@ -84,8 +84,8 @@ type
      ///	<param name="i">
      ///	  Integer representing position in array
      ///	</param>
-     property SafeRecipients[i:Integer]: String read GetSafeRecipients write SetSafeRecipients;
-     property BlockedSenders[i:Integer]: String read GetBlockedSenders write SetBlockedSenders;
+     property SafeRecipients[i: Integer]: String read GetSafeRecipients write SetSafeRecipients;
+     property BlockedSenders[i: Integer]: String read GetBlockedSenders write SetBlockedSenders;
 
   end;
 
@@ -136,12 +136,12 @@ type
   ///	  Is a list of Profiles that are in the Microsoft Outlook
   ///	</summary>
   TOutlookProfiles = class
-    private
-      FProfiles : TObjectList<TOutlookProfile>;
-      reg : TRegistry;
-      function GetOutlookProfile(i : Integer) : TOutlookProfile;
+    strict private
+      FProfiles: TObjectList<TOutlookProfile>;
+      reg: TRegistry;
+      function GetOutlookProfile(i: Integer): TOutlookProfile;
     public
-      function Count():Integer;
+      function Count(): Integer;
       constructor Create;
       destructor Destroy; override;
 
@@ -155,31 +155,6 @@ type
       property Profiles[i : Integer] : TOutlookProfile read GetOutlookProfile; default;
   end;
 
-  TUserPrivileges = class
-
-  end;
-
-  TWindowsUserProfile = class
-    private
-      reg : TRegistry;
-      function GetProfilePath(): String;
-    public
-      constructor Create(key:String);
-      destructor Destroy; override;
-      property ProfilePath: String read GetProfilePath;
-  end;
-
-  TWindowsProfiles = class
-    private
-      reg : TRegistry;
-      FAccounts : TObjectList<TWindowsUserProfile>;
-      function GetAccountByIndex(i : Integer) : TWindowsUserProfile;
-    public
-      constructor Create;
-      destructor Destroy; override;
-      function Count(): Integer;
-      property Accounts[i : Integer] : TWindowsUserProfile read GetAccountByIndex; default;
-  end;
 
   TEmailSettings = class
     strict private
@@ -200,135 +175,16 @@ type
       function Debug(): String; overload;
   end;
 
-procedure LoadUserHive(sPathToUserHive: string);
-
 implementation
 
 const crlf = #10;
-
-//NOTE:   sPathToUserHive is the full path to the users "ntuser.dat" file.
-//
-
-procedure LoadUserHive(sPathToUserHive: string);
-var
-  MyReg: TRegistry;
-//  UserPriv: TUserPrivileges;
-begin
-//  UserPriv := TUserPrivileges.Create;
-  try
-//    with UserPriv do
-    begin
-//      if HoldsPrivilege(SE_BACKUP_NAME) and HoldsPrivilege(SE_RESTORE_NAME) then
-      begin
-//        PrivilegeByName(SE_BACKUP_NAME).Enabled := True;
-//        PrivilegeByName(SE_RESTORE_NAME).Enabled := True;
-
-        MyReg := TRegistry.Create;
-        try
-          MyReg.RootKey := HKEY_LOCAL_MACHINE;
-          MyReg.UnLoadKey('TEMP_HIVE'); //unload hive to ensure one is not already loaded
-
-          if MyReg.LoadKey('TEMP_HIVE', sPathToUserHive) then
-          begin
-            //ShowMessage( 'Loaded' );
-            MyReg.OpenKey('TEMP_HIVE', False);
-
-//            if MyReg.OpenKey('TEMP_HIVE\Environment', True) then
-            begin
-              // --- Make changes *here* ---
-              //
-//              MyReg.WriteString('KEY_TO_WRITE', 'VALUE_TO_WRITE');
-              //
-              //
-            end;
-
-            //Alright, close it up
-//            MyReg.CloseKey;
-//            MyReg.UnLoadKey('TEMP_HIVE');
-            //let's unload the hive since we are done with it
-          end
-          else
-          begin
-//            Memo1.Lines.Add('Error Loading: ' + sPathToUserHive);
-          end;
-        finally
-          FreeAndNil(MyReg);
-        end;
-
-      end;
-//      WriteLn('Required privilege not held');
-    end;
-  finally
-//    FreeAndNil(UserPriv);
-  end;
-end;
-
-constructor TWindowsUserProfile.Create(key: String);
-begin
-  reg := TRegistry.Create;
-  reg.RootKey := HKEY_LOCAL_MACHINE;
-  reg.OpenKey(key, False);
-end;
-
-function TWindowsUserProfile.GetProfilePath(): String;
-begin
-  Result := reg.ReadString('ProfileImagePath');
-end;
-
-destructor TWindowsUserProfile.Destroy;
-begin
-  FreeAndNil(reg);
-end;
-
-constructor TWindowsProfiles.Create;
-var
-  valNames  : TStringList;
-  valueName : String;
-  account   : TWindowsUserProfile;
-  rtc       : Boolean;
-begin
-  FAccounts := nil;
-  reg := nil;
-  valNames := nil;
-  try
-    FAccounts   := TObjectList<TWindowsUserProfile>.Create;
-    reg         := TRegistry.Create;
-    valNames    := TStringList.Create;
-    reg.RootKey := HKEY_LOCAL_MACHINE;
-    rtc := reg.OpenKey('SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList', False);
-    reg.GetKeyNames(valNames);
-    for valueName in valNames do
-    begin
-      account := TWindowsUserProfile.Create('SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList\' + valueName);
-      FAccounts.Add(account);
-    end;
-  finally
-    FreeAndNil(valNames);
-  end;
-end;
-
-function TWindowsProfiles.GetAccountByIndex(i : Integer): TWindowsUserProfile;
-begin
-  Result := FAccounts[i];
-end;
-
-function TWindowsProfiles.Count(): Integer;
-begin
-  Result := FAccounts.Count;
-end;
-
-destructor TWindowsProfiles.Destroy;
-begin
-  FreeAndNil(reg);
-  FreeAndNil(FAccounts);
-end;
 
 constructor TOutlookProfile.Create(hKey: String; inProfileName:String);
 var
   accountList : TStringList;
   accountName : String;
   account     : TBaseAccount;
-  i : Integer;
+  i           : Integer;
 begin
   reg := TRegistry.Create;
   FAccounts := TObjectList<TBaseAccount>.Create;
@@ -380,7 +236,7 @@ begin
   Result := FSafeRecipients[i];
 end;
 
-procedure TBaseAccount.SetSafeRecipients(i:Integer;const x : String);
+procedure TBaseAccount.SetSafeRecipients(i:Integer; const x : String);
 begin
   FSafeRecipients[i] := x;
 end;
@@ -391,22 +247,22 @@ begin
   FreeAndNil(FAccounts);
 end;
 
-function TOutlookProfile.Count():Integer;
+function TOutlookProfile.Count(): Integer;
 begin
   Result := FAccounts.Count;
 end;
 
-function TOutlookProfiles.Count():Integer;
+function TOutlookProfiles.Count(): Integer;
 begin
   Result := FProfiles.Count;
 end;
 
-function TOutlookProfile.GetProfileAccount(i : Integer) : TBaseAccount;
+function TOutlookProfile.GetProfileAccount(i: Integer): TBaseAccount;
 begin
   Result := FAccounts[i];
 end;
 
-function TOutlookProfiles.GetOutlookProfile(i : Integer) : TOutlookProfile;
+function TOutlookProfiles.GetOutlookProfile(i: Integer): TOutlookProfile;
 begin
   Result := FProfiles[i];
 end;
@@ -443,7 +299,7 @@ begin
   FreeAndNil(reg);
 end;
 
-function ConvertBinaryToString(value:pbyte; len:Integer):string;
+function ConvertBinaryToString(value: pbyte; len: Integer): string;
 var
   hex: String;
   i : Integer;
@@ -458,7 +314,7 @@ begin
   Result := lowercase(hex);
 end;
 
-function ReturnUIDKey(reg:TRegistry; name:String; var value:String):Boolean;
+function ReturnUIDKey(reg: TRegistry; name: String; var value: String): Boolean;
 var
   data  : String;
   dSize : Integer;
@@ -479,7 +335,7 @@ begin
   end;
 end;
 
-function TBaseAccount.ReturnBinaryValueAsString(reg:TRegistry; name:String; var value:String):Boolean;
+function TBaseAccount.ReturnBinaryValueAsString(reg: TRegistry; name: String; var value:String):Boolean;
 var
   dSize : Integer;
   data  : String;
@@ -499,7 +355,7 @@ begin
   end;
 end;
 
-constructor TBaseAccount.Create(regKey:String);
+constructor TBaseAccount.Create(regKey: String);
 var
   SafeSenders   : String;
   SafeRecipients : string;
@@ -622,17 +478,17 @@ begin
   end;
 end;
 
-function TBaseAccount.GetSafeSendersCount():Integer;
+function TBaseAccount.GetSafeSendersCount(): Integer;
 begin
   Result := FSafeSenders.Count;
 end;
 
-function TBaseAccount.GetBlockedSenderCount():Integer;
+function TBaseAccount.GetBlockedSenderCount(): Integer;
 begin
   Result := FBlockedSenders.Count;
 end;
 
-function TBaseAccount.GetSafeRecipientCount():Integer;
+function TBaseAccount.GetSafeRecipientCount(): Integer;
 begin
   Result := FSafeRecipients.Count;
 end;
@@ -681,7 +537,7 @@ begin
     end;
   end;
 
-  for i :=0 to outlooksubKeys.Count-1 do
+  for i := 0 to outlooksubKeys.Count - 1 do
   begin
     reg := TRegistry.Create;
     detail := TBaseAccount.Create('\Software\Microsoft\Office\Outlook\OMI Account Manager\Accounts\' + outlooksubKeys.Strings[i]);
@@ -743,7 +599,7 @@ begin
   end;
 end;
 
-function TEmailSettings.FindEmailAccount(addr:String):TBaseAccount;
+function TEmailSettings.FindEmailAccount(addr: String): TBaseAccount;
 var
   i : Integer;
   detail : TBaseAccount;
